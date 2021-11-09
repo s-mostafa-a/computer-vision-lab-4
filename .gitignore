@@ -1,0 +1,9 @@
+venv/
+venv3.8/
+.idea/
+*/__pycache__/
+*/.DS_Store
+/prepare/tmp
+.DS_Store
+notebooks/.ipynb_checkpoints
+__pycache__/
