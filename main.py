@@ -33,8 +33,6 @@ def line_detection_vectorized(image, edge_image, num_rhos=180, num_thetas=180, t
     image_rho_values = np.matmul(edge_points, np.array([sin_thetas, cos_thetas]))
     #
     for ys in image_rho_values:
-        # print(ys)
-        # print('----------------------')
         subplot3.plot(thetas, ys, color="white", alpha=0.05)
 
     rhos = np.arange(-diag, diag, step=delta_rho)
