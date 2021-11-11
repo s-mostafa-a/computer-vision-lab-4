@@ -5,6 +5,22 @@ from PIL import Image
 import matplotlib.lines as mlines
 
 
+def find_nearest(point, points):
+    dist = np.sum((points - point) ** 2, axis=1)
+    nearest = points[np.argmin(dist)]
+    return nearest
+
+
+def find_far_points(point1, point2):
+    x1 = point1[0]
+    y1 = point1[1]
+    x2 = point2[0]
+    y2 = point2[1]
+    a = (y2 - y1) / (x2 - x1)
+    b = y1 - a * x1
+    return (x1 - 1000, a * (x1 - 1000) + b), (x2 + 1000, a * (x2 + 1000) + b)
+
+
 def get_two_lines_intersect(a1, a2, b1, b2):
     """
     Returns the point of intersection of the lines passing through a2,a1 and b2,b1.
@@ -35,20 +51,42 @@ def filter_all_lines(line_points, image_height, image_width):
                                            (line_points[l2, 2], line_points[l2, 3]))
             if (0 <= x <= image_height) and (0 <= y <= image_width):
                 intersections.append((x, y))
+        x1 = line_points[l1, 0]
+        y1 = line_points[l1, 1]
+        x2 = line_points[l1, 2]
+        y2 = line_points[l1, 3]
+        neg, pos = find_far_points((x1, y1), (x2, y2))
         if len(intersections) >= 2:
+
             intersections_np = np.array(intersections)
-            ll1 = intersections_np ** 2
-            ll1 = np.sum(ll1, axis=1)
-            extreme_1 = intersections[np.argmax(ll1)]
-            ll2 = (intersections_np - extreme_1) ** 2
-            ll2 = np.sum(ll2, axis=1)
-            extreme_2 = intersections[np.argmax(ll2)]
+            for_sign = intersections_np[:, 0] - x1
+            _for_sign = x2 - x1
+            that = np.argwhere(np.sign(for_sign) == np.sign(_for_sign)).squeeze(1)
+            this = np.argwhere(np.sign(for_sign) != np.sign(_for_sign)).squeeze(1)
 
-            line_points[l1, 0] = extreme_1[0]
-            line_points[l1, 1] = extreme_1[1]
-            line_points[l1, 2] = extreme_2[0]
-            line_points[l1, 3] = extreme_2[1]
-
+            if that.size != 0:
+                nearest_1 = find_nearest(np.array([x2, y2]), intersections_np[that])
+            else:
+                if x2 - x1 > 0:
+                    nearest_1 = pos
+                else:
+                    nearest_1 = neg
+            if this.size != 0:
+                nearest_2 = find_nearest(np.array([x1, y1]), intersections_np[this])
+            else:
+                if x2 - x1 > 0:
+                    nearest_2 = neg
+                else:
+                    nearest_2 = pos
+            line_points[l1, 0] = nearest_1[0]
+            line_points[l1, 1] = nearest_1[1]
+            line_points[l1, 2] = nearest_2[0]
+            line_points[l1, 3] = nearest_2[1]
+        else:
+            line_points[l1, 0] = neg[0]
+            line_points[l1, 1] = neg[1]
+            line_points[l1, 2] = pos[0]
+            line_points[l1, 3] = pos[1]
     return line_points
 
 
@@ -97,10 +135,10 @@ def line_detection_vectorized(image, edge_image, num_rhos=180, num_thetas=180, t
         b = np.sin(np.deg2rad(theta))
         x0 = (a * rho) + edge_width_half
         y0 = (b * rho) + edge_height_half
-        line_points[i, 0] = x0 - 1000 * b
-        line_points[i, 1] = y0 + 1000 * a
-        line_points[i, 2] = x0 + 1000 * b
-        line_points[i, 3] = y0 - 1000 * a
+        line_points[i, 0] = x0 - 10 * b
+        line_points[i, 1] = y0 + 10 * a
+        line_points[i, 2] = x0 + 10 * b
+        line_points[i, 3] = y0 - 10 * a
     line_points = filter_all_lines(line_points, image.shape[0], image.shape[1])
     for row in line_points:
         subplot4.add_line(mlines.Line2D([row[0], row[2]], [row[1], row[3]]))
@@ -115,7 +153,7 @@ def line_detection_vectorized(image, edge_image, num_rhos=180, num_thetas=180, t
     return accumulator.T, rhos, thetas
 
 
-image = np.array(Image.open('data/input/arch.png').convert('L'))
-edges = feature.canny(image, sigma=3)
+img = np.array(Image.open('data/input/arch.png').convert('L'))
+edges = feature.canny(img, sigma=3)
 
-line_detection_vectorized(image, edges, threshold=220)
+line_detection_vectorized(img, edges, threshold=200)
