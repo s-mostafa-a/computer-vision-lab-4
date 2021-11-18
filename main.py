@@ -139,7 +139,7 @@ def line_detection_vectorized(image, edge_image, num_rhos=180, num_thetas=180, t
         line_points[i, 1] = y0 + 10 * a
         line_points[i, 2] = x0 + 10 * b
         line_points[i, 3] = y0 - 10 * a
-    line_points = filter_all_lines(line_points, image.shape[0], image.shape[1])
+    # line_points = filter_all_lines(line_points, image.shape[0], image.shape[1])
     for row in line_points:
         subplot4.add_line(mlines.Line2D([row[0], row[2]], [row[1], row[3]]))
     subplot3.invert_yaxis()
