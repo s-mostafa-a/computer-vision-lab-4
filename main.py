@@ -5,14 +5,12 @@ from PIL import Image
 import matplotlib.lines as mlines
 
 
-def get_min_max_x_y(indices):
-    min_x = np.min(indices[:, 0])
-    max_x = np.max(indices[:, 0])
-
-    min_y = np.min(indices[:, 1])
-    max_y = np.max(indices[:, 1])
-
-    return min_x, max_x, min_y, max_y
+def find_corner_points(points):
+    dist = np.sum(points ** 2, axis=1)
+    first_corner = points[np.argmax(dist)]
+    dist2 = np.sum((points - first_corner) ** 2, axis=1)
+    second_corner = points[np.argmax(dist2)]
+    return first_corner, second_corner
 
 
 def get_2d_indices(one_d_indices, shape):
@@ -83,9 +81,10 @@ def line_detection_vectorized(image, edge_image, num_rhos=180, num_thetas=180, t
     line_points = []
     for indices in group_of_indices_per_edge:
         xys = edge_points_x_y[indices[:, 0]]
-        min_x, max_x, min_y, max_y = get_min_max_x_y(xys)
-        line_points.append(
-            [min_x + edge_height_half, min_y + edge_width_half, max_x + edge_height_half, max_y + edge_width_half])
+        first_corner, second_corner = find_corner_points(xys)
+        first_corner = first_corner + np.array([edge_height_half, edge_width_half])
+        second_corner = second_corner + np.array([edge_height_half, edge_width_half])
+        line_points.append([first_corner[0], first_corner[1], second_corner[0], second_corner[1]])
     subplot3.plot([line_thetas], [line_rhos], color="yellow", marker='o')
     # line_points = np.empty(shape=(len(line_rhos), 4))
     # for i, (rho, theta) in enumerate(zip(line_rhos, line_thetas)):
@@ -113,6 +112,6 @@ def line_detection_vectorized(image, edge_image, num_rhos=180, num_thetas=180, t
 
 if __name__ == '__main__':
     img = np.array(Image.open('data/input/arch.png').convert('L'))
-    edges = feature.canny(img, sigma=3)
+    edges = feature.canny(img, sigma=5)
 
-    line_detection_vectorized(img, edges, threshold=220)
+    line_detection_vectorized(img, edges, threshold=200)
