@@ -116,7 +116,8 @@ def line_detection_vectorized(image, edge_image, num_rhos=180, num_thetas=180, t
 
 if __name__ == '__main__':
     # img = np.array(Image.open('./data/input/arch.png').convert('L'))
-    img = np.array(Image.open('./data/input/house.jpg').convert('L'))
+    # img = np.array(Image.open('./data/input/house.jpg').convert('L'))
     # img = np.array(Image.open('./data/input/merton.jpg').convert('L'))
+    img = np.array(Image.open('./data/input/liberty.jpg').convert('L'))
     edges = feature.canny(img, sigma=5)
-    line_detection_vectorized(img, edges, threshold=600)
+    line_detection_vectorized(img, edges, threshold=250)
