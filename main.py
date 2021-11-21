@@ -6,7 +6,8 @@ import matplotlib.lines as mlines
 
 
 def find_corner_points(points):
-    dist = np.sum(points ** 2, axis=1)
+    tmp = points[0, :]
+    dist = np.sum((points - tmp) ** 2, axis=1)
     first_corner = points[np.argmax(dist)]
     dist2 = np.sum((points - first_corner) ** 2, axis=1)
     second_corner = points[np.argmax(dist2)]
