@@ -99,7 +99,7 @@ def line_detection_vectorized(image, edge_image, num_rhos=180, num_thetas=180, t
         b = np.sin(np.deg2rad(theta))
         x0 = (a * rho) + edge_width_half
         y0 = (b * rho) + edge_height_half
-        ax.add_line(mlines.Line2D([y0 + 1000 * a, y0 - 1000 * a], [x0 - 1000 * b, x0 + 1000 * b]))
+        ax.add_line(mlines.Line2D([x0 - 1000 * b, x0 + 1000 * b], [y0 + 1000 * a, y0 - 1000 * a]))
     plt.imshow(image, cmap='gray')
     plt.axis('off')
     plt.show()
